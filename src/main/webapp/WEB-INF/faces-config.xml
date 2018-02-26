@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- =========== FULL CONFIGURATION FILE ================================== -->
+
+<faces-config version="2.1"
+              xmlns="http://java.sun.com/xml/ns/javaee"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_1.xsd">
+
+    <application>
+        <locale-config>
+            <default-locale>en</default-locale>
+            <supported-locale>en</supported-locale>
+            <supported-locale>vi</supported-locale>			
+        </locale-config>
+        <resource-bundle>
+            <base-name>config.language</base-name>
+            <var>msg</var>
+        </resource-bundle>
+        <action-listener>org.primefaces.application.DialogActionListener</action-listener>
+        <navigation-handler>org.primefaces.application.DialogNavigationHandler</navigation-handler>
+        <view-handler>org.primefaces.application.DialogViewHandler</view-handler>        
+    </application>
+    <name>primefaces_poseidon</name>
+    
+    <component>
+        <component-type>org.primefaces.component.PoseidonMenu</component-type>
+        <component-class>org.primefaces.poseidon.component.menu.PoseidonMenu</component-class>
+    </component>
+    
+    <render-kit>
+        <renderer>
+            <component-family>org.primefaces.component</component-family>
+            <renderer-type>org.primefaces.component.PoseidonMenuRenderer</renderer-type>
+            <renderer-class>org.primefaces.poseidon.component.menu.PoseidonMenuRenderer</renderer-class>
+        </renderer>
+    </render-kit>
+    <factory>
+        <exception-handler-factory>com.unibro.utils.UniExceptionHandlerFactory</exception-handler-factory>
+    </factory>
+    <converter>
+        <description>A Converter for ObjTemplate</description>
+        <converter-id>ObjTemplate</converter-id>
+        <converter-class>com.unibro.objtemplate.ObjTemplate</converter-class>
+    </converter>
+    <converter>
+        <description>A Converter for FaIcon</description>
+        <converter-id>faicon</converter-id>
+        <converter-class>com.unibro.faicon.FaIcon</converter-class>
+    </converter>
+    <converter>
+        <description>A Converter for Project</description>
+        <converter-id>Project</converter-id>
+        <converter-class>com.unibro.project.Project</converter-class>
+    </converter>
+
+    <converter>
+        <description>A Converter for Language</description>
+        <converter-id>language</converter-id>
+        <converter-class>com.unibro.language.Language</converter-class>
+    </converter>
+        
+</faces-config>

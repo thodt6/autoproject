@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+    <f:metadata>       
+        <f:event type="preRenderView" listener="#{sysUserSessionBean.verifyAccessPage}"/>
+    </f:metadata>
+    <h:head>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <meta name="theme-color" content="#{guestPreferences.themeColors[guestPreferences.theme]}" />
+        </f:facet>
+        <title><ui:insert name="title">Auto Project Admin</ui:insert></title>
+        <h:outputScript name="js/nanoscroller.js" library="poseidon-layout" />
+        <h:outputScript name="js/layout.js" library="poseidon-layout" />
+        <h:outputScript name="js/swipe.js" library="poseidon-layout" />        
+        <script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyCMI-Iya48nAnxLhO4x5w8YLzgf-IrKDZo"></script>
+
+
+        <script type="text/javascript">
+            function geocode() {
+                PF('geoMap').geocode(document.getElementById('id_address').value);
+            }
+        </script> 
+        <style type="text/css">
+            a.emp1 {
+                background: lightgrey !important;
+                border-width:0;
+                border:0;
+            }
+            a.emp2 {
+                background: white !important;
+                border-width:0;
+                border:0;
+            }
+            .custom .ui-state-highlight {
+                background: black !important;
+            }
+        </style>
+
+        <script type="text/javascript">
+            //<![CDATA[
+            function updateActiveMenu() {
+                var $this = PF('me');
+                if ($this) {
+                    var pathname = window.location.pathname;
+                    if (pathname.indexOf('.html') > 0) {
+                        var activeLink = $this.menulinks.filter('[href^="' + pathname + '"]');
+                        console.log(activeLink);
+                        $this.expandedMenuitems = [];
+                        $this.clearMenuState();
+
+                        var item = activeLink.parent('li');
+                        $this.addMenuitem(item.attr('id'));
+                        addParentItems($this, item);
+                        rc();
+                    }
+                }
+            }
+
+            function addParentItems($this, item) {
+                if (item && item.length) {
+                    var parent = item.parents('li:first');
+                    $this.addMenuitem(parent.attr('id'));
+                    if (!parent.parent('ul').hasClass('ultima-menu')) {
+                        addParentItems($this, parent);
+                    } else {
+                        return;
+                    }
+                }
+                return;
+            }
+            //]]>
+        </script>
+        <ui:insert name="head"/>
+    </h:head>
+
+    <h:body styleClass="main-body">
+
+        <div class="layout-wrapper #{guestPreferences.menuLayout}">
+            <ui:include src="./topbar.xhtml" />
+            <ui:include src="./menu.xhtml" />
+
+            <div class="layout-main">
+                <div class="route-bar">
+                    <i class="fa fa-home"></i> <span>/ </span>
+                    <ui:insert name="viewname" />
+
+                    <ui:include src="./right-sidebar.xhtml" />
+                </div>
+                <div class="layout-main-content">
+                    <ui:insert name="content"/>
+                </div>
+
+                <ui:include src="./footer.xhtml" />
+            </div>
+        </div>
+
+        <p:ajaxStatus style="width:32px;height:32px;position:fixed;right:7px;bottom:7px">
+            <f:facet name="start">
+                <i class="fa fa-circle-o-notch fa-spin ajax-loader" aria-hidden="true"></i>
+            </f:facet>
+
+            <f:facet name="complete">
+                <h:outputText value="" />
+            </f:facet>
+        </p:ajaxStatus>
+
+        <h:outputStylesheet name="css/nanoscroller.css" library="poseidon-layout" />
+        <h:outputStylesheet name="css/animate.css" library="poseidon-layout" />
+        <h:outputStylesheet name="css/layout-#{guestPreferences.theme}.css" library="poseidon-layout" />
+<!--        <script type="text/javascript">
+            (function () {
+                var s = document.createElement('script');
+                s.type = 'text/javascript';
+                s.async = true;
+                s.id = 'lsInitScript';
+                s.src = 'https://livesupporti.com/Scripts/clientAsync.js?acc=c31a666b-0e7d-4f0d-adad-ed0a1a64fc0c&amp;skin=Modern';
+                var scr = document.getElementsByTagName('script')[0];
+                scr.parentNode.appendChild(s, scr);
+            })();
+        </script>-->
+    </h:body>
+
+</html>

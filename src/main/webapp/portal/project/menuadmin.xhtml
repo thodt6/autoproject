@@ -1,0 +1,149 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+    <f:metadata>       
+        <f:viewParam id="id" name="id" value="#{menuitemController.projectid}"/>
+        <f:event type="preRenderView" listener="#{menuitemController.initMenuList}"/>
+    </f:metadata>
+    <ui:define name="title">Project Menu</ui:define>
+    <ui:define name="viewname"> Project / #{menuitemController.project.name} / Menu setting</ui:define>
+    <ui:define name="content">
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-12">
+                <p:panel>                        
+                    <div style=" float:  right">
+                        <p:button icon="fa fa-arrow-left" outcome="/portal/project/index.html?id=#{menuitemController.projectid}"/>                          
+                    </div>                        
+                    <div style=" float: left">
+                        <h:form>
+                            <p:growl id="id_growl"/>
+                            <p:commandButton icon="fa fa-plus" value="Add Root Menu" action="#{menuitemController.initRootMenu}" update=":frmNewMenuItem,:frmDetail" />
+                            <p:commandButton icon="fa fa-save" value="Generate menu view" action="#{menuitemController.writeMenuCMSData}" update="id_growl"/>
+                        </h:form>                        
+                    </div>
+                    <br/>
+                    <br/>
+                    <p:separator/>
+                    <div class="ui-g">
+                        <div class="ui-g-12 ui-lg-4">
+                            <h:form id="frmObject">
+                                <p:tree id="id_menu" style="width:100%" value="#{menuitemController.tree}" var="node"
+                                        selectionMode="single"  draggable="true" droppable="true"
+                                        selection="#{menuitemController.selectedNode}">
+                                    <p:ajax  event="contextMenu" listener="#{menuitemController.onNodeSelect}" update=":frmDetail,frmNewMenuItem"/>
+                                    <p:ajax event="select" listener="#{menuitemController.onNodeSelect}" update=":frmDetail,frmNewMenuItem" />
+                                    <p:ajax event="dragdrop" listener="#{menuitemController.onDragDrop}" update="id_menu" />                                         
+                                    <p:treeNode expandedIcon="ui-icon-folder-open" collapsedIcon="ui-icon-folder-collapsed">                                        
+                                        <h:outputText value="#{node}" />
+                                    </p:treeNode>                                                                  
+                                </p:tree>
+                                <p:contextMenu id="id_context" for="id_menu">
+                                    <p:menuitem value="New Sub-Menu" icon="fa fa-plus" update=":frmDetail,:frmNewMenuItem" action="#{menuitemController.initNewObject}">                                            
+                                    </p:menuitem>
+                                    <p:menuitem value="Up" icon="fa fa-angle-up" action="#{menuitemController.goUp}" update="id_menu"/>
+                                    <p:menuitem value="Down" icon="fa fa-angle-down" action="#{menuitemController.goDown}" update="id_menu"/>
+                                    <p:menuitem value="Top" icon="fa fa-angle-double-up" action="#{menuitemController.goTop}" update="id_menu"/>
+                                    <p:menuitem value="Bottom" icon="fa fa-angle-double-down" action="#{menuitemController.goBottom}" update="id_menu"/>
+                                </p:contextMenu>     
+                            </h:form>
+                        </div>
+                        <div class="ui-g-12 ui-lg-8">
+                            <h:form id="frmDetail">
+                                <p:panel header="Menu #{menuitemController.selectedObject.id}" rendered="#{menuitemController.updatAction}">
+                                    <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank lesspad">
+                                        <h:outputText value="Menu ID" />
+                                        <p:outputPanel>                                   
+                                            <p:inputText id="id_id" style="width:90%"  value="#{menuitemController.selectedObject.id}" requiredMessage="id is not null and not contain space" required="true"/>                                   
+                                            <p:message id="msg_id_id" for="id_id"/>
+                                        </p:outputPanel> 
+                                        <h:outputText value="Menu Name" />
+                                        <p:outputPanel>
+                                            <p:tabView dynamic="true" value="#{menuitemController.selectedObject.list_name}" var="name">
+                                                <p:tab title="#{name.languageid}">
+                                                    <p:inputTextarea  value="#{name.content}"/>
+                                                </p:tab> 
+                                            </p:tabView>
+                                        </p:outputPanel>
+                                        <h:outputText value="Sub menu/item menu" />
+                                        <p:outputPanel>                                   
+                                            <p:selectBooleanCheckbox value="#{menuitemController.selectedObject.submenu}"/>
+                                        </p:outputPanel>
+                                        <h:outputText value="Outcome" />
+                                        <p:outputPanel>                                   
+                                            <p:inputText style="width:90%" value="#{menuitemController.selectedObject.outcome}"/>
+                                        </p:outputPanel>
+                                        <h:outputText value="Icon" />
+                                        <p:outputPanel>                                                                                          
+                                            <p:selectOneMenu value="#{menuitemController.selectedObject.fa_icon}"  converter="faicon" var="t" filter="true" filterMatchMode="contains">
+                                                <f:selectItems value="#{faIconService.list_icon}"  var="icon" itemValue="#{icon}" itemLabel="#{icon.name}"  />
+                                                <p:column>
+                                                    <i class="#{t.name}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputText value="#{t.name}" />
+                                                </p:column>
+                                            </p:selectOneMenu>
+                                        </p:outputPanel>
+                                    </p:panelGrid>
+                                    <p:separator/>
+                                    <p:commandButton value="Update" action="#{menuitemController.editSelected}" update=":frmObject,:frmDetail"  styleClass="pink-btn"/>  
+                                    <p:commandButton value="Delete" action="#{menuitemController.deleteObject}" update=":frmObject,:frmDetail"  styleClass="pink-btn">
+                                        <p:confirm header="Confirmation" message="Are you sure to do this action?" icon="ui-icon-alert" />
+                                    </p:commandButton>
+                                </p:panel>    
+                            </h:form>                            
+                            <h:form  id="frmNewMenuItem">
+                                <p:panel header="#{menuitemController.newObject.parentId} / Add Menu" rendered="#{!menuitemController.updatAction}">
+                                    <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank lesspad">
+                                        <h:outputText value="Menu ID" />
+                                        <p:outputPanel>                                   
+                                            <p:inputText id="id_id" style="width:90%"  value="#{menuitemController.newObject.id}" requiredMessage="id is not null and not contain space" required="true"/>                                   
+                                            <p:message id="msg_id_id" for="id_id"/>
+                                        </p:outputPanel> 
+                                        <h:outputText value="Menu Name" />
+                                        <p:outputPanel>
+                                            <p:tabView dynamic="true" value="#{menuitemController.newObject.list_name}" var="name">
+                                                <p:tab title="#{name.languageid}">
+                                                    <p:inputTextarea value="#{name.content}"/>
+                                                </p:tab> 
+                                            </p:tabView>
+                                        </p:outputPanel>
+                                        <h:outputText value="Sub menu/item menu" />
+                                        <p:outputPanel>                                   
+                                            <p:selectBooleanCheckbox value="#{menuitemController.newObject.submenu}"/>
+                                        </p:outputPanel>
+                                        <h:outputText value="Outcome" />
+                                        <p:outputPanel>                                   
+                                            <p:inputText style="width:90%" value="#{menuitemController.newObject.outcome}"/>
+                                        </p:outputPanel>
+                                        <h:outputText value="Icon" />
+                                        <p:outputPanel>                                   
+                                            <p:selectOneMenu value="#{menuitemController.newObject.fa_icon}"  converter="faicon" var="t" filter="true" filterMatchMode="contains">
+                                                <f:selectItems value="#{faIconService.list_icon}"  var="icon" itemValue="#{icon}" itemLabel="#{icon.name}"  />
+                                                <p:column>
+                                                    <i class="#{t.name}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <h:outputText value="#{t.name}" />
+                                                </p:column>
+                                            </p:selectOneMenu>
+                                        </p:outputPanel>
+                                    </p:panelGrid>
+                                    <p:separator/>
+                                    <p:commandButton value="Create" action="#{menuitemController.createObject}" update=":frmObject,:frmDetail" oncomplete="PF('dlgNewMenu').hide();"  styleClass="pink-btn"/>  
+                                </p:panel>
+                            </h:form>
+                        </div>
+                    </div>
+                </p:panel>                    
+                <p:confirmDialog global="true"  id="id_dlgDelete" showEffect="fade" hideEffect="explode">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>   
+            </div>
+        </div> 
+    </ui:define>
+</ui:composition>

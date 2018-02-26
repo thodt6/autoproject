@@ -1,0 +1,263 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+    <f:metadata>       
+        <f:viewParam id="id" name="id" value="#{objTemplateController.projectid}"/>
+        <f:event type="preRenderView" listener="#{objTemplateController.initObject}"/>
+    </f:metadata>
+    <ui:define name="title">Project</ui:define>
+    <ui:define name="viewname">Project / #{objTemplateController.project.name}</ui:define>
+    <ui:define name="content">
+        <div class="ui-g">
+            <div class="ui-g-12 ui-lg-12">
+                <p:panel>                        
+                    <div style=" float:  right">
+                        <h:form id="frmMenuRight">
+                            <p:button icon="fa fa-download" value="Import from Oracle DB" onclick="PF('dlgOracle').show();return false;"/> 
+                            <p:button icon="fa fa-download" value="Import from MySQL DB" onclick="PF('dlgMySql').show();return false;"/> 
+                            <p:commandButton icon="fa fa-copy" value="Copy variable" update=":frmCopyProject" onclick="PF('dlgCopyObject').show();return false;"/>
+                            <p:button icon="fa fa-navicon" value="Menu Admin" outcome="menuadmin.html?id=#{objTemplateController.project.projectid}"/>  
+                            <p:button icon="fa fa-plus" value="Add Object" onclick="PF('dlgNewObject').show();return false;"/>  
+                            <p:commandButton icon="fa fa-close" value="Delete #{objTemplateController.selectedObject.name}"  action="#{objTemplateController.deleteObject}" update=":frmObject,:frmSelectObject,:frmMenuRight">                                                                  
+                                <p:confirm header="Confirmation" message="Are you sure to delete #{objTemplateController.selectedObject.name}?" icon="ui-icon-alert" />
+                            </p:commandButton> 
+                            <p:button icon="fa fa-arrow-left" outcome="/portal/dashboard.html"/>     
+                        </h:form>
+                    </div>     
+
+                    <div style=" float: left">
+                        <h:form id="frmSelectObject">
+                            <p:selectOneMenu  value="#{objTemplateController.selectedObject}" converter="ObjTemplate"  >  
+                                <f:selectItems value="#{objTemplateController.objects}" var="t" itemLabel="#{t.name}" itemValue="#{t}"/>
+                                <p:ajax event="change"  update=":frmObject,:frmMenuRight"/>
+                            </p:selectOneMenu>
+                        </h:form>
+                    </div>
+                    <br/>
+                    <br/>
+                    <p:separator/>
+                    <h:form id="frmObject">
+                        <p:growl id="id_msg"/>
+                        <div class="ui-g">
+                            <div class="ui-g-12 ui-lg-3">
+                                <p:panel>
+                                    <p:outputPanel>
+                                        <h:outputText value="Object Name" />
+                                        <p:spacer width="10"/>
+                                        <p:inputText  value="#{objTemplateController.selectedObject.name}" requiredMessage="name is not null and not contain space" required="true"/>                                   
+                                    </p:outputPanel>
+                                    <br/>
+                                    <p:tabView dynamic="true" value="#{objTemplateController.selectedObject.list_help}" var="help" >
+                                        <p:tab title="#{help.languageid}">
+                                            <p:inputTextarea value="#{help.content}"/>
+                                        </p:tab> 
+                                    </p:tabView>
+                                </p:panel>
+                            </div>
+                            <div class="ui-g-12 ui-lg-9">
+                                <p:dataTable reflow="true" id="id_table" value="#{objTemplateController.selectedObject.varibleController.list_varible}" var="v" rowKey="#{v.name}">
+                                    <f:facet name="header">
+                                        <p:commandButton value="Add Varible" icon="fa fa-plus"  action="#{objTemplateController.selectedObject.varibleController.addVarible}" update=":frmObject"/>
+                                        <p:commandButton  icon="fa fa-save" value="Save #{objTemplateController.selectedObject.name}" action="#{objTemplateController.selectedObject.editMe}" update=":frmObject:id_msg"/>
+                                        <p:commandButton  icon="fa fa-save" value="Gen code #{objTemplateController.selectedObject.name}" action="#{objTemplateController.selectedObject.generateCode}" update=":frmObject:id_msg"/>
+                                    </f:facet>
+                                    <p:column headerText="Valid" style="width:10%; text-align: center">
+                                        <p:button styleClass="pink-btn" icon="fa fa-thumbs-o-down"  rendered="#{v.validVarible==0}"/>
+                                        <p:button styleClass="green-btn" icon="fa fa-thumbs-o-up"  rendered="#{v.validVarible==1}"/>
+                                    </p:column>
+                                    <p:column headerText="Name">
+                                        <p:inputText value="#{v.name}" style="width:90%"/>
+                                    </p:column>
+                                    <p:column headerText="PrimeKEY" style="width:10%">
+                                        <p:selectBooleanCheckbox value="#{v.primeKey}"/>
+                                    </p:column>
+                                    <p:column headerText="Auto Increment" style="width:10%">
+                                        <p:selectBooleanCheckbox value="#{v.autoIncrement}"/>
+                                    </p:column>
+                                    <p:column  headerText="Is Required" style="width:10%">
+                                        <p:selectBooleanCheckbox value="#{v.required}">  
+                                        </p:selectBooleanCheckbox>
+                                    </p:column>
+                                    <p:column headerText="Type">
+                                        <p:selectOneMenu style="width:70%"  value="#{v.type}">
+                                            <f:selectItem itemLabel="Select Type" noSelectionOption="true"/> 
+                                            <f:selectItem itemLabel="String" itemValue="String"/>
+                                            <f:selectItem itemLabel="Double" itemValue="Double"/>
+                                            <f:selectItem itemLabel="Float" itemValue="Float"/>
+                                            <f:selectItem itemLabel="Boolean" itemValue="Boolean"/>
+                                            <f:selectItem itemLabel="Date" itemValue="java.util.Date"/>
+                                            <f:selectItem itemLabel="Long" itemValue="Long"/>
+                                            <f:selectItem itemLabel="Integer" itemValue="Integer"/>
+                                            <f:selectItem itemLabel="BigInteger" itemValue="BigInteger"/>
+                                            <f:selectItem itemLabel="BigDecimal" itemValue="BigDecimal"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column headerText="Default Value" >
+                                        <p:inputText id="id_defaultValue" style="width: 90%" rendered="#{v.required and (v.validVarible==1)}" value="#{v.defaultValue}"/>
+                                    </p:column>
+                                    <p:column headerText="Required Message">
+                                        <p:commandButton rendered="#{v.required and (v.validVarible==1)}" value="Required Msg" id="id_required_msg"/>
+                                        <p:overlayPanel for="id_required_msg" showCloseIcon="true" >
+                                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank lesspad">
+                                                <p:repeat value="#{v.validation_msg}" var="m">
+                                                    <h:outputText value="#{m.languageid}"/>
+                                                    <p:inputText value="#{m.content}"/>
+                                                </p:repeat>
+                                            </p:panelGrid>
+                                        </p:overlayPanel>
+                                    </p:column>
+                                    <p:column headerText="Action" style=" text-align: center"  >                                   
+                                        <p:commandButton icon="fa fa-check" action="#{objTemplateController.selectedObject.varibleController.initSelectedVarible}" update="id_table">
+                                            <f:setPropertyActionListener value="#{v}" target="#{objTemplateController.selectedObject.varibleController.selectedVarible}"/>
+                                        </p:commandButton>
+                                        <p:commandButton icon="fa fa-close" action="#{objTemplateController.selectedObject.varibleController.deleteSelected}" update="id_table">                                        
+                                            <f:setPropertyActionListener value="#{v}" target="#{objTemplateController.selectedObject.varibleController.selectedVarible}"/>
+                                            <p:confirm header="Confirmation" message="Are you sure to take this action?" icon="ui-icon-alert" />
+                                        </p:commandButton> 
+                                    </p:column>
+                                    <f:facet name="footer">  
+                                        <p:commandButton value="Add Varible" icon="fa fa-plus"  action="#{objTemplateController.selectedObject.varibleController.addVarible}" update=":frmObject"/>
+                                        <p:commandButton id="id_bt_save" icon="fa fa-save" value="Save #{objTemplateController.selectedObject.name}" action="#{objTemplateController.selectedObject.editMe}" update=":frmObject:id_msg"/>
+                                        <p:commandButton id="id_bt_gen" icon="fa fa-save" value="Gen code #{objTemplateController.selectedObject.name}" action="#{objTemplateController.selectedObject.generateCode}" update=":frmObject:id_msg"/>
+                                    </f:facet>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:panel>                    
+
+            </div>
+            <p:dialog header="Add New Object" widgetVar="dlgNewObject">
+                <h:form>
+                    <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank lesspad">
+                        <h:outputText value="Object Name" />
+                        <p:outputPanel>                                   
+                            <p:inputText style="width:90%" id="id_name"  value="#{objTemplateController.newObject.name}" requiredMessage="name is not null and not contain space" required="true"/>                                   
+                            <p:message id="msg_id_name" for="id_name"/>
+                        </p:outputPanel>   
+                        <h:outputText value="Object Help" />
+                        <p:tabView dynamic="true" value="#{objTemplateController.newObject.list_help}" var="help">
+                            <p:tab title="#{help.languageid}">
+                                <p:inputTextarea value="#{help.content}"/>
+                            </p:tab> 
+                        </p:tabView>
+                    </p:panelGrid>
+                    <p:separator/>
+                    <p:commandButton value="Create" action="#{objTemplateController.createObject}" update=":frmObject,:frmSelectObject,:frmCopyProject" styleClass="pink-btn"/>  
+                </h:form>
+            </p:dialog>
+            <p:dialog widgetVar="dlgCopyObject" header="Copy object variable">
+                <h:form id="frmCopyProject">
+                    <p:panel>
+                        <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank lesspad">
+                            <h:outputText value="Select Project"/>
+                            <p:selectOneMenu value="#{objTemplateController.copyProject}" converter="Project">
+                                <f:selectItem itemLabel="Select project" noSelectionOption="true"/>
+                                <f:selectItems value="#{projectController.allProject}" var="p" itemLabel="#{p.name}" itemValue="#{p}"/>
+                                <p:ajax event="change" update="id_objtemplatelist"/>
+                            </p:selectOneMenu>
+                            <h:outputText value="Select Object"/>
+                            <p:selectOneMenu id="id_objtemplatelist" value="#{objTemplateController.copyObjTemplate}" converter="ObjTemplate">
+                                <f:selectItems value="#{objTemplateController.copyProject.templateObjects}" var="t" itemLabel="#{t.name}" itemValue="#{t}"/>
+                            </p:selectOneMenu>
+                            <h:outputText value="Selected project"/>
+                            <h:outputText value="#{objTemplateController.selectedObject.name}"/>
+                        </p:panelGrid>
+                        <f:facet name="footer">
+                            <h:outputText value="Please note that this action will replace current object varible"/>
+                            <br/>
+                            <p:commandButton value="Execute copy" action="#{objTemplateController.doCopyObject}" update=":frmObject"/>
+                        </f:facet>
+                    </p:panel>
+                </h:form>
+            </p:dialog>
+            <p:dialog widgetVar="dlgMySql" width="1200" height="250" header="Import from mysql database">
+                <h:form id="frmMySql">
+                    <div class="ui-g">
+                        <div class="ui-g-5">
+                            <p:panel>
+                                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank lesspad">
+                                    <h:outputText value="Mysql host"/>
+                                    <p:inputText value="#{objTemplateController.mysql_object.host}"/>
+                                    <h:outputText value="Port"/>
+                                    <p:inputText value="#{objTemplateController.mysql_object.port}"/>
+                                    <h:outputText value="Username"/>
+                                    <p:inputText value="#{objTemplateController.mysql_object.username}"/>
+                                    <h:outputText value="Password"/>
+                                    <p:inputText value="#{objTemplateController.mysql_object.password}"/>                            
+                                </p:panelGrid>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Load schema" action="#{objTemplateController.mysql_object.loadListSchema}" update="id_db_list,id_table_list"/>
+                                </f:facet>
+                            </p:panel>
+                        </div>
+                        <div class="ui-g-7">
+                            <p:panel>
+                                <p:selectOneMenu  id="id_db_list"  style="width:93%" filter="true" filterMatchMode="contains" value="#{objTemplateController.mysql_object.dbname}">
+                                    <f:selectItem  itemLabel="Select database" noSelectionOption="true"/>
+                                    <f:selectItems value="#{objTemplateController.mysql_object.listSchema}"/>
+                                    <p:ajax event="change" listener="#{objTemplateController.mysql_object.loadListTable}" update="id_table_list"/>
+                                </p:selectOneMenu>
+                                <br/>
+                                <p:selectCheckboxMenu label="Select table" style="width:97%" multiple="true" filter="true" filterMatchMode="contains" value="#{objTemplateController.mysql_object.selectedTables}" id="id_table_list">
+                                    <f:selectItems value="#{objTemplateController.mysql_object.listTable}"/>
+                                </p:selectCheckboxMenu>                                
+                            </p:panel>
+                            <br/>
+                            <p:commandButton value="Import" action="#{objTemplateController.doImportFromMySql}" oncomplete="PF('dlgMySql').hide();return false" update=":frmSelectObject,:frmObject,:frmMenuRight" />
+                            <p:button value="Cancel" onclick="PF('dlgMySql').hide();return false"/> 
+                        </div>
+                    </div>
+                </h:form>
+            </p:dialog>
+            <p:dialog widgetVar="dlgOracle" width="1200" height="280" header="Import from Oracle database">
+                <h:form id="frmOracle">
+                    <div class="ui-g">
+                        <div class="ui-g-5">
+                            <p:panel>
+                                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank lesspad">
+                                    <h:outputText value="Oracle host"/>
+                                    <p:inputText value="#{objTemplateController.oracle_object.host}"/>
+                                    <h:outputText value="Port"/>
+                                    <p:inputText value="#{objTemplateController.oracle_object.port}"/>
+                                    <h:outputText value="ServiceName"/>
+                                    <p:inputText value="#{objTemplateController.oracle_object.serviceName}"/>
+                                    <h:outputText value="Username"/>
+                                    <p:inputText value="#{objTemplateController.oracle_object.username}"/>
+                                    <h:outputText value="Password"/>
+                                    <p:inputText value="#{objTemplateController.oracle_object.password}"/>    
+                                </p:panelGrid>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Load schema" action="#{objTemplateController.oracle_object.loadListSchema}" update="id_db_list,id_table_list"/>
+                                </f:facet>
+                            </p:panel>
+                        </div>
+                        <div class="ui-g-7">
+                            <p:panel>
+                                <p:selectOneMenu  id="id_db_list"  style="width:93%" filter="true" filterMatchMode="contains" value="#{objTemplateController.oracle_object.dbname}">
+                                    <f:selectItem  itemLabel="Select database" noSelectionOption="true"/>
+                                    <f:selectItems value="#{objTemplateController.oracle_object.listSchema}"/>
+                                    <p:ajax event="change" listener="#{objTemplateController.oracle_object.loadListTable}" update="id_table_list"/>
+                                </p:selectOneMenu>
+                                <br/>
+                                <p:selectCheckboxMenu label="Select table" style="width:97%" multiple="true" filter="true" filterMatchMode="contains" value="#{objTemplateController.oracle_object.selectedTables}" id="id_table_list">
+                                    <f:selectItems value="#{objTemplateController.oracle_object.listTable}"/>
+                                </p:selectCheckboxMenu>                                
+                            </p:panel>
+                            <br/>
+                            <p:commandButton value="Import" action="#{objTemplateController.doImportFromOracle}" oncomplete="PF('dlgOracle').hide();return false" update=":frmSelectObject,:frmObject,:frmMenuRight" />
+                            <p:button value="Cancel" onclick="PF('dlgOracle').hide();return false"/> 
+                        </div>
+                    </div>
+                </h:form>
+            </p:dialog>
+            <p:confirmDialog global="true"  id="id_dlgDelete" showEffect="fade" hideEffect="explode">
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>  
+        </div> 
+    </ui:define>
+</ui:composition>

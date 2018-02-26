@@ -1,0 +1,17 @@
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:pp="http://primefaces.org/poseidon"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <pp:menu id="menu" widgetVar="me">                        
+        <p:menuitem id="om_home" value="Home" icon="fa fa-fw fa-home" outcome="/portal/dashboard.html"/>
+        <p:submenu id="om_project" label="Project" icon="fa fa-fw fa-list-alt">  
+            <c:forEach items="#{projectController.allProject}" var="p">
+                <p:menuitem id="om_project_#{p.projectid}" value="#{p.name}" icon="fa fa-fw fa-code" outcome="/portal/project/index.html?id=#{p.projectid}"/>
+            </c:forEach>
+        </p:submenu>
+        <p:menuitem id="om_language" value="Language" icon="fa fa-fw fa-language"/>
+        <p:menuitem id="om_sight_out" value="Sign out" icon="fa fa-fw fa-sign-out" action="#{sysUserSessionBean.doLogout}"/>
+    </pp:menu>
+</ui:composition>

@@ -1,0 +1,24 @@
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:pp="http://primefaces.org/poseidon"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:form id="menuform"> 
+        <div class="layout-menu-container">
+            <div class="nano">
+                <div class="nano-content menu-scroll-content">
+                    <div class="search-input">
+                        <input type="text" placeholder="Search"/>
+                        <i class="fa fa-search"></i>
+                    </div>  
+                    <ui:include src="menu_content.xhtml"/>
+                    <div class="layout-menu-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </h:form>
+</ui:composition>

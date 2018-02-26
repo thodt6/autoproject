@@ -1,0 +1,91 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+    <ui:define name="title">Project Dashboard</ui:define>    
+    <ui:define name="viewname">Project Dashboard</ui:define>
+    <ui:define name="head">
+        <script type="text/javascript">
+            function start() {
+                PF('statusDialog').show();
+            }
+
+            function stop() {
+                PF('statusDialog').hide();
+            }
+        </script>
+        <script type="text/javascript">
+            //<![CDATA[
+            function skinChart() {
+                this.cfg.shadow = false;
+                this.cfg.title = '';
+                this.cfg.seriesColors = ['#00acac', '#3e96e7'];
+                this.cfg.grid = {
+                    background: '#ffffff',
+                    borderColor: '#ffffff',
+                    gridLineColor: '#EEEEEE',
+                    shadow: false
+                };
+                this.cfg.axesDefaults = {
+                    rendererOptions: {
+                        textColor: '#212121'
+                    }
+                };
+                this.cfg.seriesDefaults = {
+                    shadow: false,
+                    lineWidth: 1,
+                    markerOptions: {
+                        shadow: false,
+                        size: 7,
+                        style: 'circle'
+                    }
+                }
+            }
+            //]]>  
+        </script>
+        <style type="text/css">
+            .main-content {
+                padding: 0;
+            }
+        </style>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="frmObject">
+            <div class="ui-g">             
+                <ui:repeat  value="#{projectController.allProject}" var="project">
+                    <h:panelGroup  layout="block" class="ui-g-12 ui-md-2">
+                        <p:panel header="#{project.projectType}| #{project.dataAccessType}">
+                            <h2><p:link id="id_link" value="#{project.name}" outcome="/portal/project/index.html?id=#{project.projectid}" /></h2>
+                            <p:tooltip for="id_link" value="#{project.projectFolder}"/>
+                            <p:separator/>
+                            <div align="left">
+                                <p:commandButton icon="fa fa-download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                    <p:fileDownload value="#{project.projectFile}" />
+                                </p:commandButton>
+                                <p:commandButton icon="fa fa-pencil"/>
+                                <p:commandButton icon="fa fa-close" action="#{project.deleteMe}" update=":frmObject">                                        
+                                    <p:confirm header="Confirmation" message="Are you sure to delete #{project.name}?" icon="ui-icon-alert" />
+                                </p:commandButton> 
+                            </div>
+                        </p:panel>
+                    </h:panelGroup>
+                </ui:repeat>
+                <h:panelGroup layout="block" class="ui-g-12 ui-md-2">
+                    <p:panel header="Add New Project">
+                        <br/><br/>
+                        <center><p:button icon="fa fa-plus" outcome="/portal/project/create.html"/></center>
+                        <br/><br/>
+                    </p:panel>
+                </h:panelGroup>
+                <p:confirmDialog global="true"  id="id_dlgDelete" showEffect="fade" hideEffect="explode">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+            </div>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

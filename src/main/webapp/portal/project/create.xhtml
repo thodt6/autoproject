@@ -1,0 +1,62 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+    <ui:define name="title">Create New Project</ui:define>
+    <ui:define name="viewname">Create New Project</ui:define>
+    <ui:define name="content">
+        <p:growl id="id_growl"/>
+        <h:form id="frmObject">
+            <p:panel>                                               
+                <div class="ui-g">
+                    <div class="ui-g-12 ui-lg-8">
+                        <p:panel>
+                            <h1 style="font-weight: bolder">Create new project</h1>
+                            <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank lesspad">
+                                <h:outputText value="Project Name" style="font-size: 20px"/>
+                                <p:outputPanel>                                   
+                                    <p:inputText style="width:90%" id="id_name"  value="#{projectController.newObject.name}" requiredMessage="Project name is not null and not contain space" required="true"/>                                   
+                                    <p:message id="msg_id_name" for="id_name"/>
+                                </p:outputPanel>
+                                <h:outputText value="Project Type" style="font-size: 20px"/>
+                                <p:outputPanel>                                   
+                                    <p:selectOneMenu value="#{projectController.newObject.projectType}">
+                                        <f:selectItem itemLabel="CMS" itemValue="CMS"/>
+                                        <f:selectItem itemLabel="API" itemValue="API"/>
+                                    </p:selectOneMenu>
+                                </p:outputPanel>
+                                <h:outputText value="Data Access Model" style="font-size: 20px"/>
+                                <p:outputPanel>                                   
+                                    <p:selectOneMenu value="#{projectController.newObject.dataAccessType}">
+                                        <f:selectItem itemLabel="ABSTRACT" itemValue="ABSTRACT"/>
+                                        <f:selectItem itemLabel="API" itemValue="API"/>
+                                        <f:selectItem itemLabel="MySQL" itemValue="MySQL"/>
+                                        <f:selectItem itemLabel="MongoDB" itemValue="MongoDB"/>
+                                        <f:selectItem itemLabel="SQL SERSVER" itemValue="SQL_SERVER"/>
+                                        <f:selectItem itemLabel="ORACLE" itemValue="ORACLE"/>
+                                        <f:selectItem itemLabel="ELASTIC" itemValue="ELASTICSEARCH"/>
+                                    </p:selectOneMenu>
+                                </p:outputPanel>
+                                <h:outputText value="Project Language Support" style="font-size: 20px"/>
+                                <p:outputPanel>                                   
+                                    <p:selectCheckboxMenu value="#{projectController.newObject.language_list}" label="Language" converter="language">
+                                        <f:selectItems value="#{languageController.objects}" var="l" itemLabel="#{l.name}" itemValue="#{l}"/>
+                                    </p:selectCheckboxMenu>
+                                </p:outputPanel>
+                            </p:panelGrid>
+                        </p:panel>
+                        <br/>
+                        <div style="float: right;">
+                            <p:button value="Cancel" outcome="/portal/dashboard.html"/>
+                        </div>
+                        <div style="float: left;">
+                            <p:commandButton value="Create" action="#{projectController.createObject}" update="id_growl" styleClass="pink-btn"/>                                 
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+        </h:form>    
+    </ui:define>
+</ui:composition>
