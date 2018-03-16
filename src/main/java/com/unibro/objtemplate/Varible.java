@@ -66,6 +66,7 @@ public class Varible {
     public String getType() {
         return type;
     }
+    
 
     /**
      * @param type the type to set
@@ -188,14 +189,14 @@ public class Varible {
             if (!this.type.equals(DATE_TYPE)) {
                 return "    private " + this.type + " " + this.name + ";\n";
             } else {
-                return "    " + "@JsonFormat(pattern = \"yyyy-MM-dd'T'HH:mm:ss.Z\")\n"
+                return "    " + "@JsonFormat(pattern = \"yyyy-MM-dd'T'HH:mm:ss.SSSZ\")\n"
                         + "    private " + this.type + " " + this.name + ";\n";
             }
         } else {
             if (!this.type.equals(DATE_TYPE)) {
                 return "    private " + this.type + " " + this.name + " = " + this.defaultValue + ";\n";
             } else {
-                return "    " + "@JsonFormat(pattern = \"yyyy-MM-dd'T'HH:mm:ss.Z\")\n"
+                return "    " + "@JsonFormat(pattern = \"yyyy-MM-dd'T'HH:mm:ss.SSSZ\")\n"
                         + "    private " + this.type + " " + this.name + " = " + this.defaultValue + ";\n";
             }
 

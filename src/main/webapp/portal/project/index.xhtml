@@ -96,7 +96,7 @@
                                         </p:selectOneMenu>
                                     </p:column>
                                     <p:column headerText="Default Value" >
-                                        <p:inputText id="id_defaultValue" style="width: 90%" rendered="#{v.required and (v.validVarible==1)}" value="#{v.defaultValue}"/>
+                                        <p:inputText id="id_defaultValue" style="width: 90%" value="#{v.defaultValue}"/>
                                     </p:column>
                                     <p:column headerText="Required Message">
                                         <p:commandButton rendered="#{v.required and (v.validVarible==1)}" value="Required Msg" id="id_required_msg"/>

@@ -1,12 +1,9 @@
 package com.unibro.project;
 
-import com.google.common.io.Files;
 import com.unibro.objtemplate.ObjTemplateDAO;
 import com.unibro.utils.Global;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +15,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -35,10 +30,15 @@ public class ProjectController implements Serializable, Converter {
     private Project[] selectedObjects;
     private Project newObject = new Project();
     private String selectedId;
-    private Logger logger = Logger.getLogger(this.getClass().getName());
+
+    private static final Logger logger = Logger.getLogger(ProjectController.class.getName());
 
     public ProjectController() {
 //        this.loadObjects();
+    }
+    
+    public int getTotalProject(){
+        return this.objects.size();
     }
 
     public void initSelectedObject() {
@@ -104,11 +104,9 @@ public class ProjectController implements Serializable, Converter {
             this.getNewObject().setProjectid(this.getNewObject().getName().toLowerCase());
             this.getNewObject().setProjectFolder(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName());
 
-//            File f = new File(this.getNewObject().getProjectFolder());
-//            f.mkdirs();
             ProjectDAO dao = new ProjectDAO();
             if (dao.create(getNewObject())) {
-                this.copyProject();
+                this.copyProject(this.getNewObject());
                 FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Create project success", "");
                 FacesContext.getCurrentInstance().addMessage(null, msg);
             } else {
@@ -118,133 +116,54 @@ public class ProjectController implements Serializable, Converter {
         }
     }
 
-    private void copyProject() {
-        if (this.getNewObject().getProjectType().equals("CMS")) {
-            if (this.getNewObject().getDataAccessType().equals(Project.ABSTRACT_ACCESS)) {
-                this.copyProjectCMSAbstract();
-            }
-            if (this.getNewObject().getDataAccessType().equals(Project.API_ACCESS)) {
-                this.copyProjectCMSApi();
-            }
-        }
-        if (this.getNewObject().getProjectType().equals("API")) {
-            if (this.getNewObject().getDataAccessType().equals(Project.MYSQL_ACCESS)) {
-                this.copyApiMySQLProject();
-            }
-            if (this.getNewObject().getDataAccessType().equals(Project.ELASTIC_ACCESS)) {
-                this.copyApiElasticProject();
-            }
-            if (this.getNewObject().getDataAccessType().equals(Project.ORACLE_ACCESS)) {
-                this.copyApiOracleProject();
+    public void resetToDefaultProject(){
+        if (this.getSelectedObject() != null) {
+            File f = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getSelectedObject().getName());
+            logger.info("File path:" + f.getAbsolutePath());
+            
+            if (f.exists()) {
+                boolean deleted=false;
+                try {
+                    FileUtils.deleteDirectory(f);
+                    deleted=true;
+                } catch (IOException ex) {
+                    deleted=false;
+                }
+                if (deleted) {
+                    this.copyProject(this.selectedObject);
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Reset done", "");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                } else {
+                    FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Reset fail. Can not delete folder " + f.getAbsolutePath(), "");
+                    FacesContext.getCurrentInstance().addMessage(null, msg);
+                }
+            } else {
+                this.copyProject(this.selectedObject);
+                FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Reset done", "");
+                FacesContext.getCurrentInstance().addMessage(null, msg);
             }
         }
     }
 
-    private void copyApiMySQLProject() {
-        try {
-            File src = new File(Global.getConfigValue("FILE_PROJECT_TEMPLATE") + "autoproject_api_template");
-            logger.info(src.getAbsolutePath());
-            File dst = new File(Global.getConfigValue("FILE_PROJECT_PATH"));
-            logger.info(dst.getAbsolutePath());
-            FileUtils.copyDirectoryToDirectory(src, dst);
-            File current_dst = new File(Global.getConfigValue("FILE_PROJECT_PATH") + "autoproject_api_template");
-            Files.move(current_dst, new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName()));
-            //Replace project name in log4j
-            File log4j = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/resources/log4j.properties");
-            File pomFile = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/pom.xml");
-            Global.replaceString(log4j, "projectname", this.getNewObject().getName());
-            Global.replaceString(pomFile, "autoprojectapitemplate", this.getNewObject().getProjectid());
-        } catch (IOException ex) {
-            logger.error(ex);
+    private void copyProject(Project p) {
+        if (p.getProjectType().equals("CMS")) {
+            if (p.getDataAccessType().equals(Project.ABSTRACT_ACCESS)) {
+                ProjectUtils.copyProjectCMSAbstract(p);
+            }
+            if (p.getDataAccessType().equals(Project.API_ACCESS)) {
+                ProjectUtils.copyProjectCMSApi(p);
+            }
         }
-    }
-    
-    private void copyApiOracleProject() {
-        try {
-            File src = new File(Global.getConfigValue("FILE_PROJECT_TEMPLATE") + "autoproject_api_oracle_template");
-            logger.info(src.getAbsolutePath());
-            File dst = new File(Global.getConfigValue("FILE_PROJECT_PATH"));
-            logger.info(dst.getAbsolutePath());
-            FileUtils.copyDirectoryToDirectory(src, dst);
-            File current_dst = new File(Global.getConfigValue("FILE_PROJECT_PATH") + "autoproject_api_oracle_template");
-            Files.move(current_dst, new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName()));
-            //Replace project name in log4j
-            File log4j = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/resources/log4j.properties");
-            File pomFile = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/pom.xml");
-            Global.replaceString(log4j, "projectname", this.getNewObject().getName());
-            Global.replaceString(pomFile, "autoprojectapitemplate", this.getNewObject().getProjectid());
-        } catch (IOException ex) {
-            logger.error(ex);
-        }
-    }
-
-    private void copyApiElasticProject() {
-        try {
-            File src = new File(Global.getConfigValue("FILE_PROJECT_TEMPLATE") + "autoproject_api_elastic_template");
-            logger.info(src.getAbsolutePath());
-            File dst = new File(Global.getConfigValue("FILE_PROJECT_PATH"));
-            logger.info(dst.getAbsolutePath());
-            FileUtils.copyDirectoryToDirectory(src, dst);
-            File current_dst = new File(Global.getConfigValue("FILE_PROJECT_PATH") + "autoproject_api_elastic_template");
-            Files.move(current_dst, new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName()));
-            //Replace project name in log4j
-            File log4j = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/resources/log4j.properties");
-            File pomFile = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/pom.xml");
-            Global.replaceString(log4j, "projectname", this.getNewObject().getName());
-            Global.replaceString(pomFile, "autoprojectapitemplate", this.getNewObject().getProjectid());
-        } catch (IOException ex) {
-            logger.error(ex);
-        }
-    }
-
-    private void copyProjectCMSAbstract() {
-        try {
-            File src = new File(Global.getConfigValue("FILE_PROJECT_TEMPLATE") + "autoproject_cms_abstract_template");
-            File dst = new File(Global.getConfigValue("FILE_PROJECT_PATH"));
-            FileUtils.copyDirectoryToDirectory(src, dst);
-            File current_dst = new File(Global.getConfigValue("FILE_PROJECT_PATH") + "autoproject_cms_abstract_template");
-            Files.move(current_dst, new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName()));
-            //Replace project name in log4j
-            File log4j = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/resources/config/log4j.properties");
-            Global.replaceString(log4j, "projectname", this.getNewObject().getName());
-            File config4j = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/resources/config/config.properties");
-            Global.replaceString(config4j, "projectname", this.getNewObject().getName());
-            File meta_inf = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/webapp/META-INF/context.xml");
-            Global.replaceString(meta_inf, "projectname", this.getNewObject().getName());
-            File template = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/webapp/WEB-INF/template.xhtml");
-            Global.replaceString(template, "projectname", this.getNewObject().getName());
-            File footer = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/webapp/WEB-INF/footer.xhtml");
-            Global.replaceString(footer, "projectname", this.getNewObject().getName());
-            File pomFile = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/pom.xml");
-            Global.replaceString(pomFile, "autoprojecttemplate", this.getNewObject().getProjectid());
-        } catch (IOException ex) {
-            logger.error(ex);
-        }
-    }
-
-    private void copyProjectCMSApi() {
-        try {
-            logger.info("Start copy api cms project");
-            File src = new File(Global.getConfigValue("FILE_PROJECT_TEMPLATE") + "autoproject_cms_api_template");
-            File dst = new File(Global.getConfigValue("FILE_PROJECT_PATH"));
-            FileUtils.copyDirectoryToDirectory(src, dst);
-            File current_dst = new File(Global.getConfigValue("FILE_PROJECT_PATH") + "autoproject_cms_api_template");
-            Files.move(current_dst, new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName()));
-            //Replace project name in log4j
-            File log4j = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/resources/config/log4j.properties");
-            Global.replaceString(log4j, "projectname", this.getNewObject().getName());
-            File config4j = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/resources/config/config.properties");
-            Global.replaceString(config4j, "projectname", this.getNewObject().getName());
-            File meta_inf = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/webapp/META-INF/context.xml");
-            Global.replaceString(meta_inf, "projectname", this.getNewObject().getName());
-            File template = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/webapp/WEB-INF/template.xhtml");
-            Global.replaceString(template, "projectname", this.getNewObject().getName());
-            File footer = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/src/main/webapp/WEB-INF/footer.xhtml");
-            Global.replaceString(footer, "projectname", this.getNewObject().getName());
-            File pomFile = new File(Global.getConfigValue("FILE_PROJECT_PATH") + this.getNewObject().getName() + "/pom.xml");
-            Global.replaceString(pomFile, "autoprojecttemplate", this.getNewObject().getProjectid());
-        } catch (IOException ex) {
-            logger.error(ex);
+        if (p.getProjectType().equals("API")) {
+            if (p.getDataAccessType().equals(Project.MYSQL_ACCESS)) {
+                ProjectUtils.copyApiMySQLProject(p);
+            }
+            if (p.getDataAccessType().equals(Project.ELASTIC_ACCESS)) {
+                ProjectUtils.copyApiElasticProject(p);
+            }
+            if (p.getDataAccessType().equals(Project.ORACLE_ACCESS)) {
+                ProjectUtils.copyApiOracleProject(p);
+            }
         }
     }
 
@@ -333,35 +252,6 @@ public class ProjectController implements Serializable, Converter {
             return "";
         }
         return String.valueOf(((Project) value).getProjectid());
-    }
-
-    public void handleFileUpload(FileUploadEvent event) {
-        UploadedFile f = event.getFile();
-        String filename = f.getFileName();
-        File saveFile = new File("DIR" + "/" + filename);
-        if (saveFile.exists()) {
-            filename = System.currentTimeMillis() + filename;
-            saveFile = new File("DIR" + "/" + filename);
-        }
-        try {
-            final int BUFFER_SIZE = 1024;
-            FileOutputStream fileOutputStream = new FileOutputStream(saveFile);
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int bulk;
-            InputStream inputStream = f.getInputstream();
-            while (true) {
-                bulk = inputStream.read(buffer);
-                if (bulk < 0) {
-                    break;
-                }
-                fileOutputStream.write(buffer, 0, bulk);
-                fileOutputStream.flush();
-            }
-            fileOutputStream.close();
-            inputStream.close();
-        } catch (IOException ex) {
-            logger.error("Error:" + ex);
-        }
     }
 
 }

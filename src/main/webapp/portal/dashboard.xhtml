@@ -4,8 +4,11 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
+    <f:metadata>       
+        <f:event type="preRenderView" listener="#{projectController.loadObjects}"/>
+    </f:metadata>
     <ui:define name="title">Project Dashboard</ui:define>    
-    <ui:define name="viewname">Project Dashboard</ui:define>
+    <ui:define name="viewname">Project Dashboard (#{projectController.totalProject})</ui:define>
     <ui:define name="head">
         <script type="text/javascript">
             function start() {
@@ -54,32 +57,61 @@
 
     <ui:define name="content">
         <h:form id="frmObject">
-            <div class="ui-g">             
-                <ui:repeat  value="#{projectController.allProject}" var="project">
-                    <h:panelGroup  layout="block" class="ui-g-12 ui-md-2">
-                        <p:panel header="#{project.projectType}| #{project.dataAccessType}">
-                            <h2><p:link id="id_link" value="#{project.name}" outcome="/portal/project/index.html?id=#{project.projectid}" /></h2>
+            <p:growl id="id_growl"/>
+            <div class="ui-g">           
+                <p:panel>
+                    <p:dataTable widgetVar="tableProject"  value="#{projectController.objects}" var="project" reflow="true" rowKey="#{project.projectid}">
+                        <f:facet name="header">
+                            <p:button value="Add new project" icon="fa fa-plus" outcome="/portal/project/create.html"/>
+                        </f:facet>
+                        <p:column headerText="Project Name" filterBy="#{project.name}" filterMatchMode="contains" filterStyle="width:90%">
+                            <h3><p:link id="id_link" value="#{project.name}" outcome="/portal/project/index.html?id=#{project.projectid}" /></h3>
                             <p:tooltip for="id_link" value="#{project.projectFolder}"/>
-                            <p:separator/>
-                            <div align="left">
-                                <p:commandButton icon="fa fa-download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);">
-                                    <p:fileDownload value="#{project.projectFile}" />
-                                </p:commandButton>
-                                <p:commandButton icon="fa fa-pencil"/>
-                                <p:commandButton icon="fa fa-close" action="#{project.deleteMe}" update=":frmObject">                                        
-                                    <p:confirm header="Confirmation" message="Are you sure to delete #{project.name}?" icon="ui-icon-alert" />
-                                </p:commandButton> 
-                            </div>
-                        </p:panel>
-                    </h:panelGroup>
-                </ui:repeat>
-                <h:panelGroup layout="block" class="ui-g-12 ui-md-2">
-                    <p:panel header="Add New Project">
-                        <br/><br/>
-                        <center><p:button icon="fa fa-plus" outcome="/portal/project/create.html"/></center>
-                        <br/><br/>
-                    </p:panel>
-                </h:panelGroup>
+                        </p:column>
+                        <p:column headerText="Project Type" style=" text-align: center" filterBy="#{project.projectType}" filterMatchMode="exact" filterStyle="width:90%">
+                            <f:facet name="filter">
+                                <p:selectOneMenu onchange="PF('tableProject').filter()" >
+                                    <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItem itemLabel="CMS" itemValue="CMS"/>
+                                    <f:selectItem itemLabel="API" itemValue="API"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                            <h:outputText value="#{project.projectType}"/>
+                        </p:column>
+                        <p:column headerText="Access Model" style=" text-align: center" filterBy="#{project.dataAccessType}" filterMatchMode="exact" filterStyle="width:90%">
+                            <f:facet name="filter">
+                                <p:selectOneMenu onchange="PF('tableProject').filter()" >
+                                    <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true" />
+                                    <f:selectItem itemLabel="My SQL" itemValue="MySQL"/>
+                                    <f:selectItem itemLabel="API" itemValue="API"/>
+                                    <f:selectItem itemLabel="ORACLE" itemValue="ORACLE"/>
+                                    <f:selectItem itemLabel="ELASTIC SEARCH" itemValue="ELASTICSEARCH"/>
+                                    <f:selectItem itemLabel="SQL SERVER" itemValue="SQL_SERVER"/>
+                                    <f:selectItem itemLabel="ABSTRACT" itemValue="ABSTRACT"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                            <h:outputText value="#{project.dataAccessType}"/>
+                        </p:column>
+                        <p:column headerText="Created time" style=" text-align: center">
+                            <h:outputText value="#{project.createdtime}"/>
+                        </p:column>
+                        <p:column headerText="Action" style=" text-align: center">
+                            <p:commandButton title="Download" icon="fa fa-download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);">
+                                <p:fileDownload value="#{project.projectFile}" />
+                            </p:commandButton>
+                            <p:spacer width="10"/>
+                            <p:button icon="fa fa-pencil"/>
+                            <p:spacer width="10"/>
+                            <p:commandButton title="delete" icon="fa fa-close" action="#{project.deleteMe}" update=":frmObject">                                        
+                                <p:confirm header="Confirmation" message="Are you sure to delete #{project.name}?" icon="ui-icon-alert" />
+                            </p:commandButton>
+                            <p:commandButton title="reset" icon="fa fa-magic" action="#{projectController.resetToDefaultProject}" update=":frmObject:id_growl">
+                                <f:setPropertyActionListener target="#{projectController.selectedObject}" value="#{project}"/>
+                                <p:confirm header="Confirmation" message="#{project.name} folder will reset to default template. Are you sure?" icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
                 <p:confirmDialog global="true"  id="id_dlgDelete" showEffect="fade" hideEffect="explode">
                     <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
                     <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />

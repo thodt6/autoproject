@@ -30,7 +30,7 @@ public class VaribleController {
         logger.info("VaribleController");
         this.loadVaribleList();
     }
-    
+
     public VaribleController(List<Varible> list_varible) {
         this.list_varible = list_varible;
 //        this.saveVaribleList();
@@ -78,6 +78,69 @@ public class VaribleController {
         v.setProject(this.getProject());
         this.getList_varible().add(v);
         logger.info(this.getList_varible().size());
+    }
+
+    //Return format object.getName1(),object.getName2()
+    public String getObjectKeyData(String name) {
+        String ret = "";
+        for (Varible v : this.getList_varible()) {
+            if (v.getPrimeKey()) {
+                ret += "," + "object.get" + v.getName1() + "()";
+            }
+        }
+        if (ret.length() > 0) {
+            ret = ret.substring(1);
+        }
+        return ret;
+    }
+
+    public String getSplitKeyVarible() {
+        String ret = "";
+        int index = 0;
+        String values = "";
+        for (Varible v : this.getList_varible()) {
+            if (v.getPrimeKey()) {
+                if (v.getType().equals(Varible.STRING_TYPE)) {
+                    ret += v.getType() + " " + "v" + index + " = keys_value[" + index + "];\n";
+                    values += ",v" + index;
+                } else {
+                    ret += v.getType() + " " + "v" + index + " = " + v.getType() + ".valueOf(" + "keys_value[" + index + "]);\n";
+                    values += ",v" + index;
+                }
+                index++;
+            }
+        }
+        if (values.length() > 0) {
+            values = values.substring(1);
+        }
+        ret += "Object[] values = new Object[]{" + values + "};\n";
+        return ret;
+    }
+
+    public String getVaribleStrList() {
+        String ret = "";
+        for (Varible v : this.list_varible) {
+            if (!v.getAutoIncrement()) {
+                ret += "," + v.getName();
+            }
+        }
+        if (ret.length() > 0) {
+            ret = ret.substring(1);
+        }
+        return ret;
+    }
+
+    public String getKeyVaribleStrList() {
+        String ret = "";
+        for (Varible v : this.list_varible) {
+            if (v.getPrimeKey()) {
+                ret += "," + v.getName();
+            }
+        }
+        if (ret.length() > 0) {
+            ret = ret.substring(1);
+        }
+        return ret;
     }
 
     public void initSelectedVarible() {
@@ -214,7 +277,7 @@ public class VaribleController {
     //Return prepared statement data
     public String getInsertJdbcPrepareStatementData() {
         String ret = "";
-        int index=0;
+        int index = 0;
         for (int i = 0; i < this.list_varible.size(); i++) {
             if (!list_varible.get(i).getAutoIncrement()) {
                 ret += "    ps.setObject(" + (index + 1) + ", object.get" + list_varible.get(i).getName1() + "());\n";
@@ -271,10 +334,11 @@ public class VaribleController {
                 index++;
             }
         }
+        ret += "// Primare key\n";
         for (int i = 0; i < this.list_varible.size(); i++) {
             if (list_varible.get(i).getPrimeKey()) {
                 ret += "    ps.setObject(" + (index + 1) + ", object.get" + list_varible.get(i).getName1() + "());\n";
-                break;
+                index++;
             }
         }
         if (ret.length() > 0) {

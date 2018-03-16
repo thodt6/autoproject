@@ -31,7 +31,7 @@ public class GuestPreferences implements Serializable {
     
     private String theme = Global.getConfigValue("app.theme");
         
-    private String menuLayout = "static";
+    private String menuLayout = "horizontal";
         
     @PostConstruct
     public void init() {
